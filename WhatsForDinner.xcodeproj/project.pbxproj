@@ -6,17 +6,43 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		826C0D192DBC256B0071E19C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 826C0D152DBC256B0071E19C /* Assets.xcassets */; };
+		826C0D1A2DBC256B0071E19C /* RecipeListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826C0D162DBC256B0071E19C /* RecipeListView.swift */; };
+		826C0D1B2DBC256B0071E19C /* WhatsForDinnerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826C0D172DBC256B0071E19C /* WhatsForDinnerApp.swift */; };
+		826C0D2F2DBC5A110071E19C /* APIKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826C0D2E2DBC5A110071E19C /* APIKeys.swift */; };
+		826C0D312DBC6B810071E19C /* Recipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826C0D302DBC6B810071E19C /* Recipe.swift */; };
+		826C0D332DBC6BFD0071E19C /* RecipeDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826C0D322DBC6BFD0071E19C /* RecipeDetail.swift */; };
+		826C0D352DBC6C1B0071E19C /* RecipesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826C0D342DBC6C1B0071E19C /* RecipesViewModel.swift */; };
+		826C0D372DBC6C4F0071E19C /* RecipeDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826C0D362DBC6C4F0071E19C /* RecipeDetailViewModel.swift */; };
+		826C0D392DBC6C850071E19C /* RecipeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826C0D382DBC6C850071E19C /* RecipeDetailView.swift */; };
+		826C0D3B2DBC6C990071E19C /* FilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826C0D3A2DBC6C990071E19C /* FilterView.swift */; };
+		826C0D3D2DBC6CAD0071E19C /* FavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826C0D3C2DBC6CAD0071E19C /* FavoritesView.swift */; };
+		826C0D3F2DBC6CBA0071E19C /* AddRecipeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826C0D3E2DBC6CBA0071E19C /* AddRecipeView.swift */; };
+		826C0D412DBC6F520071E19C /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826C0D402DBC6F520071E19C /* SearchView.swift */; };
+		826C0D432DBC724D0071E19C /* AddIngredientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826C0D422DBC724D0071E19C /* AddIngredientView.swift */; };
+		826C0D452DBC727D0071E19C /* EditRecipeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826C0D442DBC727D0071E19C /* EditRecipeView.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		826C0D072DBC25580071E19C /* WhatsForDinner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WhatsForDinner.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		826C0D152DBC256B0071E19C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		826C0D162DBC256B0071E19C /* RecipeListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeListView.swift; sourceTree = "<group>"; };
+		826C0D172DBC256B0071E19C /* WhatsForDinnerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatsForDinnerApp.swift; sourceTree = "<group>"; };
+		826C0D2E2DBC5A110071E19C /* APIKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeys.swift; sourceTree = "<group>"; };
+		826C0D302DBC6B810071E19C /* Recipe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recipe.swift; sourceTree = "<group>"; };
+		826C0D322DBC6BFD0071E19C /* RecipeDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeDetail.swift; sourceTree = "<group>"; };
+		826C0D342DBC6C1B0071E19C /* RecipesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipesViewModel.swift; sourceTree = "<group>"; };
+		826C0D362DBC6C4F0071E19C /* RecipeDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeDetailViewModel.swift; sourceTree = "<group>"; };
+		826C0D382DBC6C850071E19C /* RecipeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeDetailView.swift; sourceTree = "<group>"; };
+		826C0D3A2DBC6C990071E19C /* FilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterView.swift; sourceTree = "<group>"; };
+		826C0D3C2DBC6CAD0071E19C /* FavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesView.swift; sourceTree = "<group>"; };
+		826C0D3E2DBC6CBA0071E19C /* AddRecipeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRecipeView.swift; sourceTree = "<group>"; };
+		826C0D402DBC6F520071E19C /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
+		826C0D422DBC724D0071E19C /* AddIngredientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddIngredientView.swift; sourceTree = "<group>"; };
+		826C0D442DBC727D0071E19C /* EditRecipeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditRecipeView.swift; sourceTree = "<group>"; };
+		826C0D462DBC741A0071E19C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		826C0D092DBC25580071E19C /* WhatsForDinner */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = WhatsForDinner;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		826C0D042DBC25580071E19C /* Frameworks */ = {
@@ -32,7 +58,7 @@
 		826C0CFE2DBC25580071E19C = {
 			isa = PBXGroup;
 			children = (
-				826C0D092DBC25580071E19C /* WhatsForDinner */,
+				826C0D182DBC256B0071E19C /* WhatsForDinner */,
 				826C0D082DBC25580071E19C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -43,6 +69,29 @@
 				826C0D072DBC25580071E19C /* WhatsForDinner.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		826C0D182DBC256B0071E19C /* WhatsForDinner */ = {
+			isa = PBXGroup;
+			children = (
+				826C0D462DBC741A0071E19C /* Info.plist */,
+				826C0D152DBC256B0071E19C /* Assets.xcassets */,
+				826C0D302DBC6B810071E19C /* Recipe.swift */,
+				826C0D322DBC6BFD0071E19C /* RecipeDetail.swift */,
+				826C0D342DBC6C1B0071E19C /* RecipesViewModel.swift */,
+				826C0D362DBC6C4F0071E19C /* RecipeDetailViewModel.swift */,
+				826C0D2E2DBC5A110071E19C /* APIKeys.swift */,
+				826C0D172DBC256B0071E19C /* WhatsForDinnerApp.swift */,
+				826C0D162DBC256B0071E19C /* RecipeListView.swift */,
+				826C0D382DBC6C850071E19C /* RecipeDetailView.swift */,
+				826C0D3A2DBC6C990071E19C /* FilterView.swift */,
+				826C0D402DBC6F520071E19C /* SearchView.swift */,
+				826C0D3C2DBC6CAD0071E19C /* FavoritesView.swift */,
+				826C0D3E2DBC6CBA0071E19C /* AddRecipeView.swift */,
+				826C0D422DBC724D0071E19C /* AddIngredientView.swift */,
+				826C0D442DBC727D0071E19C /* EditRecipeView.swift */,
+			);
+			path = WhatsForDinner;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -59,9 +108,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				826C0D092DBC25580071E19C /* WhatsForDinner */,
 			);
 			name = WhatsForDinner;
 			packageProductDependencies = (
@@ -109,6 +155,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				826C0D192DBC256B0071E19C /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -119,6 +166,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				826C0D3D2DBC6CAD0071E19C /* FavoritesView.swift in Sources */,
+				826C0D352DBC6C1B0071E19C /* RecipesViewModel.swift in Sources */,
+				826C0D3F2DBC6CBA0071E19C /* AddRecipeView.swift in Sources */,
+				826C0D372DBC6C4F0071E19C /* RecipeDetailViewModel.swift in Sources */,
+				826C0D412DBC6F520071E19C /* SearchView.swift in Sources */,
+				826C0D2F2DBC5A110071E19C /* APIKeys.swift in Sources */,
+				826C0D452DBC727D0071E19C /* EditRecipeView.swift in Sources */,
+				826C0D1A2DBC256B0071E19C /* RecipeListView.swift in Sources */,
+				826C0D3B2DBC6C990071E19C /* FilterView.swift in Sources */,
+				826C0D432DBC724D0071E19C /* AddIngredientView.swift in Sources */,
+				826C0D332DBC6BFD0071E19C /* RecipeDetail.swift in Sources */,
+				826C0D1B2DBC256B0071E19C /* WhatsForDinnerApp.swift in Sources */,
+				826C0D312DBC6B810071E19C /* Recipe.swift in Sources */,
+				826C0D392DBC6C850071E19C /* RecipeDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -256,6 +317,8 @@
 				DEVELOPMENT_TEAM = ZASGZ6M8RB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WhatsForDinner/Info.plist;
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photos to add recipe images.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -284,6 +347,8 @@
 				DEVELOPMENT_TEAM = ZASGZ6M8RB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WhatsForDinner/Info.plist;
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photos to add recipe images.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
