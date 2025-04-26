@@ -23,14 +23,26 @@ struct AddIngredientView: View {
         Form {
             Section(header: Text("Ingredient Details")) {
                 TextField("Ingredient Name", text: $name)
+                    .keyboardType(.default)
+                    .textInputAutocapitalization(.words)
+                    .submitLabel(.next)
                 
                 HStack {
                     Text("Amount")
                     Spacer()
                     TextField("Amount", value: $amount, formatter: NumberFormatter())
-                        .keyboardType(.decimalPad)
+                        .keyboardType(.decimalPad) // Shows numeric keyboard with decimal
                         .multilineTextAlignment(.trailing)
                         .frame(width: 60)
+                        .toolbar {
+                            ToolbarItemGroup(placement: .keyboard) {
+                                Spacer()
+                                Button("Done") {
+                                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                                }
+                            }
+                        }
+                
                 }
                 
                 Picker("Unit", selection: $unit) {

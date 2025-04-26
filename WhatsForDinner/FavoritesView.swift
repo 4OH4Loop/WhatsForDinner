@@ -85,7 +85,7 @@ struct FavoritesView: View {
                         ScrollView {
                             LazyVStack(spacing: 16) {
                                 ForEach(favoriteCustomRecipes) { recipe in
-                                    CustomRecipeRow(recipe: customRecipe)
+                                    CustomRecipeRow(recipe: recipe)
                                 }
                             }
                             .padding()
@@ -103,8 +103,7 @@ struct FavoritesView: View {
 
 struct CustomRecipeRow: View {
     @Environment(\.modelContext) private var modelContext
-    // Create a new recipe object
-    @State var customRecipe = ""
+    let recipe: CustomRecipe
     @State private var showingDetail = false
     @State private var showingEditSheet = false
     @State private var showingDeleteAlert = false
@@ -114,9 +113,9 @@ struct CustomRecipeRow: View {
             showingDetail = true
         }) {
             HStack(spacing: 16) {
-                // Recipe Image
-                if let imageURL = customRecipe.image {
-                    AsyncImage(url: URL(string: imageURL)) { phase in
+                // Recipe Image - handle as non-optional string
+                if !recipe.image.isEmpty {
+                    AsyncImage(url: URL(string: recipe.image)) { phase in
                         if let image = phase.image {
                             image
                                 .resizable()
@@ -137,21 +136,31 @@ struct CustomRecipeRow: View {
                                 .frame(height: 250)
                         }
                     }
+                } else {
+                    // No image case
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(height: 250)
+                        .overlay(
+                            Image(systemName: "photo")
+                                .font(.largeTitle)
+                                .foregroundColor(.gray)
+                        )
                 }
-            
+                
                 // Recipe Info
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(customRecipe.title)
+                    Text(recipe.title)
                         .font(.headline)
                         .foregroundColor(.primary)
                         .lineLimit(2)
                     
                     HStack(spacing: 12) {
-                        Label("\(customRecipe.readyInMinutes) min", systemImage: "clock")
+                        Label("\(recipe.readyInMinutes) min", systemImage: "clock")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
-                        Label("\(customRecipe.servings) servings", systemImage: "person")
+                        Label("\(recipe.servings) servings", systemImage: "person")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -174,9 +183,9 @@ struct CustomRecipeRow: View {
                     }
                     
                     Button(action: {
-                        customRecipe.isFavorite.toggle()
+                        recipe.isFavorite.toggle()
                     }) {
-                        Label(customRecipe.isFavorite ? "Remove from Favorites" : "Add to Favorites", systemImage: customRecipe.isFavorite ? "heart.slash" : "heart")
+                        Label(recipe.isFavorite ? "Remove from Favorites" : "Add to Favorites", systemImage: recipe.isFavorite ? "heart.slash" : "heart")
                     }
                 } label: {
                     Image(systemName: "ellipsis")
@@ -194,17 +203,17 @@ struct CustomRecipeRow: View {
         }
         .buttonStyle(PlainButtonStyle())
         .sheet(isPresented: $showingDetail) {
-            CustomRecipeDetailView(recipe: customRecipe)
+            CustomRecipeDetailView(recipe: recipe)
         }
         .sheet(isPresented: $showingEditSheet) {
-            EditRecipeView(recipe: customRecipe)
+            EditRecipeView(recipe: recipe)
         }
         .alert(isPresented: $showingDeleteAlert) {
             Alert(
                 title: Text("Delete Recipe"),
-                message: Text("Are you sure you want to delete '\($customRecipe.title)'? This action cannot be undone."),
+                message: Text("Are you sure you want to delete '\(recipe.title)'? This action cannot be undone."),
                 primaryButton: .destructive(Text("Delete")) {
-                    modelContext.delete($customRecipe)
+                    modelContext.delete(recipe)
                 },
                 secondaryButton: .cancel()
             )

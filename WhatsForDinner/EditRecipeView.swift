@@ -48,8 +48,9 @@ struct EditRecipeView: View {
         _dietType = State(initialValue: recipe.dietType)
         _isFavorite = State(initialValue: recipe.isFavorite)
         
-        if let imageURL = recipe.image {
-            _selectedImage = State(initialValue: UIImage(data: imageData))
+        if selectedImage != nil {
+            let imageURLString = ""
+            recipe.image = imageURLString
         }
     }
     
@@ -179,8 +180,10 @@ func saveRecipe() {
     recipe.isFavorite = isFavorite
     
     // Update image if changed
-    if let selectedImage = selectedImage {
-        recipe.imageData = selectedImage.jpegData(compressionQuality: 0.8)
+    if selectedImage != nil {
+        // Save image to local storage and get URL or save a URL reference
+        let imageURLString = ""
+        recipe.image = imageURLString
     }
     
     // Update ingredients

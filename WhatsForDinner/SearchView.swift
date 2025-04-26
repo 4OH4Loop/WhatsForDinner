@@ -25,6 +25,8 @@ struct SearchView: View {
                         .foregroundColor(.gray)
                     
                     TextField("Search recipes...", text: $searchText)
+                        .keyboardType(.default)
+                        .submitLabel(.search)
                         .onSubmit {
                             if !searchText.isEmpty {
                                 Task {

@@ -11,7 +11,15 @@ import PhotosUI
 
 struct AddRecipeView: View {
     // Create a new recipe object
-    @State var recipe = ""
+    @State var recipe = CustomRecipe(
+        title: "",
+        servings: 4,
+        readyInMinutes: 30,
+        instructions: "",
+        cuisineType: "",
+        dietType: "",
+        isFavorite: false
+    )
     
     // Local state to bind to UI elements
     @State private var title = ""
@@ -43,10 +51,13 @@ struct AddRecipeView: View {
             Form {
                 Section(header: Text("Recipe Information")) {
                     TextField("Recipe Title", text: $title)
+                        .keyboardType(.default)
+                        .textInputAutocapitalization(.words) // Capitalizes first letter of each word
+                        .submitLabel(.next)
                     
-                    Button(action: {
+                    Button {
                         showingImagePicker = true
-                    }) {
+                    } label: {
                         HStack {
                             Text("Recipe Photo")
                             Spacer()
@@ -103,9 +114,9 @@ struct AddRecipeView: View {
                         }
                     }
                     
-                    Button(action: {
+                    Button {
                         showingAddIngredient = true
-                    }) {
+                    } label: {
                         Label("Add Ingredient", systemImage: "plus.circle.fill")
                             .foregroundColor(.blue)
                     }
@@ -114,6 +125,15 @@ struct AddRecipeView: View {
                 Section(header: Text("Instructions")) {
                     TextEditor(text: $instructions)
                         .frame(minHeight: 150)
+                        .keyboardType(.default)
+                        .toolbar {
+                            ToolbarItemGroup(placement: .keyboard) {
+                                Spacer()
+                                Button("Done") {
+                                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                                }
+                            }
+                        }
                 }
             }
             .navigationTitle("Add Recipe")
@@ -125,7 +145,7 @@ struct AddRecipeView: View {
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Save") {
+                    Button {
                         // Update recipe with form data
                         recipe.title = title
                         recipe.servings = servings
@@ -133,32 +153,33 @@ struct AddRecipeView: View {
                         recipe.instructions = instructions
                         recipe.cuisineType = cuisineType
                         recipe.dietType = dietType
-                        recipe.ingredients = ingredients
-                        modelContext.insert(recipe)
-                        guard let _ = try? modelContext.save() else {
-                            print("😡 ERROR: Save on AddRecipeView did not work.")
-                            return
+                        
+                        // Set image if provided
+                        if selectedImage != nil {
+                            let imageURLString = ""
+                            recipe.image = imageURLString
                         }
                         
-                        dismiss()
+                        // Add ingredients to recipe
+                        recipe.ingredients = ingredients
+                        
+                        // Insert into context and save
+                        modelContext.insert(recipe)
+                        
+                        do {
+                            try modelContext.save()
+                            dismiss()
+                        } catch {
+                            print("😡 ERROR: Save on AddRecipeView did not work: \(error.localizedDescription)")
+                        }
+                    } label: {
+                        Text("Save")
                     }
                     .disabled(!isFormValid)
                 }
             }
             .onAppear {
-                // Initialize empty form
-                title = recipe.title
-                servings = recipe.servings
-                readyInMinutes = recipe.readyInMinutes
-                instructions = recipe.instructions
-                cuisineType = recipe.cuisineType
-                dietType = recipe.dietType
-                
-                if let imageData = recipe.imageData, let uiImage = UIImage(data: imageData) {
-                    selectedImage = uiImage
-                }
-                
-                ingredients = recipe.ingredients
+                // Initialize empty form (already set with default values)
             }
             .sheet(isPresented: $showingImagePicker) {
                 PHPickerView(image: $selectedImage)
