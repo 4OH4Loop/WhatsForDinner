@@ -116,6 +116,7 @@ struct RecipeDetailView: View {
                     
                     if recipeDetailVM.isLoading {
                         ProgressView("Loading recipe details...")
+                            .multilineTextAlignment(.center)
                             .padding()
                     } else if let recipeDetail = recipeDetailVM.recipeDetail {
                         // Dietary Tags
@@ -235,7 +236,7 @@ struct RecipeDetailView: View {
         }
         .edgesIgnoringSafeArea(.top)
         .task {
-            await recipeDetailVM.fetchRecipeDetails(id: recipe.id!)
+            await recipeDetailVM.fetchRecipeDetails(id: recipe.id)
         }
     }
 }

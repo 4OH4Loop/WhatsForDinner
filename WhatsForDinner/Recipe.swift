@@ -10,7 +10,7 @@ import SwiftData
 
 @Model
 class Recipe {
-    @Attribute(.unique) var id: Int?
+    @Attribute(.unique) var id: Int
     var title: String
     var image: String?
     var servings: Int?
@@ -34,13 +34,13 @@ class Recipe {
     var isFavorite: Bool
     var dateAdded: Date
     
-    init(id: Int, title: String, image: String? = nil,
-         servings: Int? = nil, readyInMinutes: Int? = nil, sourceName: String? = nil,
-         sourceUrl: String? = nil, spoonacularSourceUrl: String? = nil, healthScore: Double? = nil,
-         spoonacularScore: Double? = nil, pricePerServing: Double? = nil, cheap: Bool? = nil,
-         creditsText: String? = nil, cuisines: [String]? = nil, dairyFree: Bool? = nil,
-         glutenFree: Bool? = nil, instructions: String? = nil, summary: String? = nil,
-         vegetarian: Bool? = nil, vegan: Bool? = nil, dishTypes: [String]? = nil,
+    init(id: Int = 0, title: String = "", image: String? = "",
+         servings: Int? = 0, readyInMinutes: Int? = 0, sourceName: String? = "",
+         sourceUrl: String? = "", spoonacularSourceUrl: String? = "", healthScore: Double? = 0.0,
+         spoonacularScore: Double? = 0.0, pricePerServing: Double? = 0.0, cheap: Bool? = false,
+         creditsText: String? = "", cuisines: [String]? = [], dairyFree: Bool? = false,
+         glutenFree: Bool? = false, instructions: String? = "", summary: String? = "",
+         vegetarian: Bool? = false, vegan: Bool? = false, dishTypes: [String]? = [],
          isFavorite: Bool = false, dateAdded: Date = Date()) {
         self.id = id
         self.title = title

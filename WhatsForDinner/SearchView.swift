@@ -125,14 +125,8 @@ struct SearchView: View {
             for apiRecipe in response.results {
                 // Check if recipe already exists in database
                 let fetchDescriptor = FetchDescriptor<Recipe>(
-                    predicate: #Predicate<Recipe> {
-                        if let id = $0.id {
-                            return id == apiRecipe.id
-                        }
-                        else {
-                            return false
-                        }
-                    })
+                    predicate: #Predicate<Recipe> { $0.id == apiRecipe.id }
+                )
                 
                 if let existingRecipe = try? modelContext.fetch(fetchDescriptor).first {
                     // Use existing recipe

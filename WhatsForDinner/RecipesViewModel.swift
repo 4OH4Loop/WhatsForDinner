@@ -116,14 +116,8 @@ class RecipesViewModel {
             if let apiRecipe = returned.recipes.first {
                 // Check if recipe already exists in database
                 let fetchDescriptor = FetchDescriptor<Recipe>(
-                    predicate: #Predicate<Recipe> {
-                        if let id = $0.id {
-                            return id == apiRecipe.id
-                        }
-                        else {
-                            return false
-                        }
-                    })
+                    predicate: #Predicate<Recipe> { $0.id == apiRecipe.id }
+                )
                 
                 // Check if we already have this recipe
                 if (try? modelContext.fetch(fetchDescriptor).first) != nil {
@@ -215,14 +209,8 @@ class RecipesViewModel {
                 for apiRecipe in returned.results {
                     // Check if recipe already exists in database
                     let fetchDescriptor = FetchDescriptor<Recipe>(
-                        predicate: #Predicate<Recipe> {
-                            if let id = $0.id {
-                                return id == apiRecipe.id
-                            }
-                            else {
-                                return false
-                            }
-                        })
+                        predicate: #Predicate<Recipe> { $0.id == apiRecipe.id }
+                    )
                     
                     // Skip if we already have this recipe
                     if (try? modelContext.fetch(fetchDescriptor).first) == nil {
