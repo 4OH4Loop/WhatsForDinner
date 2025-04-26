@@ -6,27 +6,50 @@
 //
 
 import Foundation
+import SwiftData
 import SwiftUI
 
 @Observable
 class RecipesViewModel {
+    // API Response structures for Spoonacular
     struct RandomRecipeResponse: Codable {
-        var recipes: [Recipe]
+        var recipes: [RecipeAPIResponse]
     }
     
     struct RecipeSearchResponse: Codable {
-        var results: [Recipe]
+        var results: [RecipeAPIResponse]
         var offset: Int
         var number: Int
         var totalResults: Int
     }
     
-    var randomRecipe: Recipe?
-    var searchResults: [Recipe] = []
-    var favoriteRecipes: [Recipe] = []
-    var customRecipes: [CustomRecipe] = []
+    struct RecipeAPIResponse: Codable, Identifiable {
+        var id: Int
+        var title: String
+        var image: String?
+        var servings: Int?
+        var readyInMinutes: Int?
+        var sourceName: String?
+        var sourceUrl: String?
+        var spoonacularSourceUrl: String?
+        var healthScore: Double?
+        var spoonacularScore: Double?
+        var pricePerServing: Double?
+        var cheap: Bool?
+        var creditsText: String?
+        var cuisines: [String]?
+        var dairyFree: Bool?
+        var glutenFree: Bool?
+        var instructions: String?
+        var summary: String?
+        var vegetarian: Bool?
+        var vegan: Bool?
+        var dishTypes: [String]?
+    }
+    
+    // State properties
     var isLoading = false
-    var errorMessage: String?
+    var baseURL = "https://api.spoonacular.com"
     
     // Filter properties
     var selectedMainIngredient: String = ""
@@ -39,11 +62,17 @@ class RecipesViewModel {
     let availableCuisines = ["italian", "mexican", "asian", "american", "mediterranean", "indian"]
     let availableDietaryRestrictions = ["vegetarian", "vegan", "gluten free", "dairy free"]
     
-    var baseURL = "https://api.spoonacular.com/"
+    // ModelContext access
+    var modelContext: ModelContext?
+    
+    // MARK: - API Methods
     
     func fetchRandomRecipe() async {
+        guard let modelContext = self.modelContext else {
+            return
+        }
+        
         isLoading = true
-        errorMessage = nil
         
         var tags: [String] = []
         
@@ -73,7 +102,6 @@ class RecipesViewModel {
         guard let url = components.url else {
             print("😡 URL ERROR: Could not create URL")
             isLoading = false
-            errorMessage = "Could not create URL"
             return
         }
         
@@ -82,34 +110,75 @@ class RecipesViewModel {
             guard let returned = try? JSONDecoder().decode(RandomRecipeResponse.self, from: data) else {
                 print("😡 JSON ERROR: Could not decode returned data")
                 isLoading = false
-                errorMessage = "Could not decode returned data"
                 return
             }
             
-            Task { @MainActor in
-                if let recipe = returned.recipes.first {
-                    self.randomRecipe = recipe
+            if let apiRecipe = returned.recipes.first {
+                // Check if recipe already exists in database
+                let fetchDescriptor = FetchDescriptor<Recipe>(
+                    predicate: #Predicate<Recipe> {
+                        if let id = $0.id {
+                            return id == apiRecipe.id
+                        }
+                        else {
+                            return false
+                        }
+                    })
+                
+                // Check if we already have this recipe
+                if (try? modelContext.fetch(fetchDescriptor).first) != nil {
+                    // Recipe already exists
+                    print("😎 Found existing recipe in database")
                 } else {
-                    self.errorMessage = "No recipes found with the selected filters"
+                    // Create new recipe
+                    let newRecipe = Recipe(
+                        id: apiRecipe.id,
+                        title: apiRecipe.title,
+                        image: apiRecipe.image,
+                        servings: apiRecipe.servings,
+                        readyInMinutes: apiRecipe.readyInMinutes,
+                        sourceName: apiRecipe.sourceName,
+                        sourceUrl: apiRecipe.sourceUrl,
+                        spoonacularSourceUrl: apiRecipe.spoonacularSourceUrl,
+                        healthScore: apiRecipe.healthScore,
+                        spoonacularScore: apiRecipe.spoonacularScore,
+                        pricePerServing: apiRecipe.pricePerServing,
+                        cheap: apiRecipe.cheap,
+                        creditsText: apiRecipe.creditsText,
+                        cuisines: apiRecipe.cuisines,
+                        dairyFree: apiRecipe.dairyFree,
+                        glutenFree: apiRecipe.glutenFree,
+                        instructions: apiRecipe.instructions,
+                        summary: apiRecipe.summary,
+                        vegetarian: apiRecipe.vegetarian,
+                        vegan: apiRecipe.vegan,
+                        dishTypes: apiRecipe.dishTypes
+                    )
+                    
+                    modelContext.insert(newRecipe)
+                    print("😎 Added new recipe to database")
                 }
-                isLoading = false
             }
+            isLoading = false
         } catch {
             isLoading = false
-            errorMessage = error.localizedDescription
             print("😡 ERROR: Could not get data \(error.localizedDescription)")
         }
     }
     
     func searchRecipes(query: String) async {
+        guard let modelContext = self.modelContext else {
+            return
+        }
+        
         isLoading = true
-        errorMessage = nil
         
         var components = URLComponents(string: "\(baseURL)/recipes/complexSearch")!
         
         var queryItems = [URLQueryItem(name: "apiKey", value: APIKeys.spoonacularKey),
                           URLQueryItem(name: "query", value: query),
-                          URLQueryItem(name: "addRecipeInformation", value: "true")]
+                          URLQueryItem(name: "addRecipeInformation", value: "true"),
+                          URLQueryItem(name: "number", value: "10")]
         
         if !selectedCuisine.isEmpty {
             queryItems.append(URLQueryItem(name: "cuisine", value: selectedCuisine))
@@ -129,7 +198,6 @@ class RecipesViewModel {
         guard let url = components.url else {
             print("😡 URL ERROR: Could not create URL")
             isLoading = false
-            errorMessage = "Could not create URL"
             return
         }
         
@@ -138,86 +206,64 @@ class RecipesViewModel {
             guard let returned = try? JSONDecoder().decode(RecipeSearchResponse.self, from: data) else {
                 print("😡 JSON ERROR: Could not decode returned data")
                 isLoading = false
-                errorMessage = "Could not decode returned data"
                 return
             }
             
-            Task { @MainActor in
-                self.searchResults = returned.results
-                if returned.results.isEmpty {
-                    self.errorMessage = "No recipes found matching your search criteria"
+            if returned.results.isEmpty {
+            } else {
+                // Process and save recipes
+                for apiRecipe in returned.results {
+                    // Check if recipe already exists in database
+                    let fetchDescriptor = FetchDescriptor<Recipe>(
+                        predicate: #Predicate<Recipe> {
+                            if let id = $0.id {
+                                return id == apiRecipe.id
+                            }
+                            else {
+                                return false
+                            }
+                        })
+                    
+                    // Skip if we already have this recipe
+                    if (try? modelContext.fetch(fetchDescriptor).first) == nil {
+                        // Create new recipe
+                        let newRecipe = Recipe(
+                            id: apiRecipe.id,
+                            title: apiRecipe.title,
+                            image: apiRecipe.image,
+                            servings: apiRecipe.servings,
+                            readyInMinutes: apiRecipe.readyInMinutes,
+                            sourceName: apiRecipe.sourceName,
+                            sourceUrl: apiRecipe.sourceUrl,
+                            spoonacularSourceUrl: apiRecipe.spoonacularSourceUrl,
+                            healthScore: apiRecipe.healthScore,
+                            spoonacularScore: apiRecipe.spoonacularScore,
+                            pricePerServing: apiRecipe.pricePerServing,
+                            cheap: apiRecipe.cheap,
+                            creditsText: apiRecipe.creditsText,
+                            cuisines: apiRecipe.cuisines,
+                            dairyFree: apiRecipe.dairyFree,
+                            glutenFree: apiRecipe.glutenFree,
+                            instructions: apiRecipe.instructions,
+                            summary: apiRecipe.summary,
+                            vegetarian: apiRecipe.vegetarian,
+                            vegan: apiRecipe.vegan,
+                            dishTypes: apiRecipe.dishTypes
+                        )
+                        
+                        modelContext.insert(newRecipe)
+                    }
                 }
-                isLoading = false
             }
+            
+            isLoading = false
         } catch {
             isLoading = false
-            errorMessage = error.localizedDescription
             print("😡 ERROR: Could not get data \(error.localizedDescription)")
         }
     }
     
-    func addToFavorites(recipe: Recipe) {
-        if !favoriteRecipes.contains(where: { $0.id == recipe.id }) {
-            favoriteRecipes.append(recipe)
-            saveToUserDefaults()
-        }
-    }
-    
-    func removeFromFavorites(recipe: Recipe) {
-        favoriteRecipes.removeAll { $0.id == recipe.id }
-        saveToUserDefaults()
-    }
-    
-    func isFavorite(recipe: Recipe) -> Bool {
-        return favoriteRecipes.contains(where: { $0.id == recipe.id })
-    }
-    
-    func addCustomRecipe(_ recipe: CustomRecipe) {
-        customRecipes.append(recipe)
-        saveCustomRecipesToUserDefaults()
-    }
-    
-    func updateCustomRecipe(_ recipe: CustomRecipe) {
-        if let index = customRecipes.firstIndex(where: { $0.id == recipe.id }) {
-            customRecipes[index] = recipe
-            saveCustomRecipesToUserDefaults()
-        }
-    }
-    
-    func deleteCustomRecipe(_ recipe: CustomRecipe) {
-        customRecipes.removeAll { $0.id == recipe.id }
-        saveCustomRecipesToUserDefaults()
-    }
-    
-    // MARK: - User Defaults Storage
-    private func saveToUserDefaults() {
-        if let encoded = try? JSONEncoder().encode(favoriteRecipes) {
-            UserDefaults.standard.set(encoded, forKey: "FavoriteRecipes")
-        }
-    }
-    
-    private func loadFromUserDefaults() {
-        if let data = UserDefaults.standard.data(forKey: "FavoriteRecipes"),
-           let decoded = try? JSONDecoder().decode([Recipe].self, from: data) {
-            favoriteRecipes = decoded
-        }
-    }
-    
-    private func saveCustomRecipesToUserDefaults() {
-        if let encoded = try? JSONEncoder().encode(customRecipes) {
-            UserDefaults.standard.set(encoded, forKey: "CustomRecipes")
-        }
-    }
-    
-    private func loadCustomRecipesFromUserDefaults() {
-        if let data = UserDefaults.standard.data(forKey: "CustomRecipes"),
-           let decoded = try? JSONDecoder().decode([CustomRecipe].self, from: data) {
-            customRecipes = decoded
-        }
-    }
-    
-    init() {
-        loadFromUserDefaults()
-        loadCustomRecipesFromUserDefaults()
+    init(modelContext: ModelContext? = nil) {
+        self.modelContext = modelContext
     }
 }

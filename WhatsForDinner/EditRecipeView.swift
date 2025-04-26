@@ -4,13 +4,18 @@
 //
 //  Created by Carolyn Ballinger on 4/25/25.
 //
+//
+//  EditRecipeView.swift
+//  WhatsForDinner
+//
 
 import SwiftUI
+import SwiftData
 import PhotosUI
 
 struct EditRecipeView: View {
-    @Environment(\.presentationMode) var presentationMode
-    @State var viewModel: RecipesViewModel
+    @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) private var modelContext
     
     let recipe: CustomRecipe
     
@@ -26,15 +31,13 @@ struct EditRecipeView: View {
     
     @State private var showingImagePicker = false
     @State private var showingAddIngredient = false
-    @State private var currentIngredient = CustomIngredient(name: "", amount: 1, unit: "cup")
     
     let cuisineTypes = ["Italian", "Mexican", "Asian", "American", "Mediterranean", "Indian", "French", "Greek", "Spanish", "Middle Eastern", "Thai", "Japanese", "Chinese", "Korean", "Vietnamese", "Other"]
     
     let dietTypes = ["None", "Vegetarian", "Vegan", "Gluten Free", "Dairy Free", "Keto", "Paleo", "Low Carb", "Low Fat", "Other"]
     
-    init(recipe: CustomRecipe, viewModel: RecipesViewModel) {
+    init(recipe: CustomRecipe) {
         self.recipe = recipe
-        self.viewModel = viewModel
         
         _title = State(initialValue: recipe.title)
         _servings = State(initialValue: recipe.servings)
@@ -45,7 +48,7 @@ struct EditRecipeView: View {
         _dietType = State(initialValue: recipe.dietType)
         _isFavorite = State(initialValue: recipe.isFavorite)
         
-        if let imageData = recipe.image {
+        if let imageURL = recipe.image {
             _selectedImage = State(initialValue: UIImage(data: imageData))
         }
     }
@@ -103,6 +106,12 @@ struct EditRecipeView: View {
                         }
                     }
                     .onDelete { indexSet in
+                        // Remove from the recipe's ingredients array
+                        _ = indexSet
+                        for i in indexSet {
+                            let ingredient = ingredients[i]
+                            modelContext.delete(ingredient)
+                        }
                         ingredients.remove(atOffsets: indexSet)
                     }
                     
@@ -138,64 +147,71 @@ struct EditRecipeView: View {
             }
             .navigationTitle("Edit Recipe")
             .navigationBarItems(leading: Button("Cancel") {
-                presentationMode.wrappedValue.dismiss()
+                dismiss()
             })
             .sheet(isPresented: $showingImagePicker) {
                 PHPickerView(image: $selectedImage)
             }
             .sheet(isPresented: $showingAddIngredient) {
-                AddIngredientView(ingredient: $currentIngredient, onSave: {
-                    ingredients.append(currentIngredient)
-                    currentIngredient = CustomIngredient(name: "", amount: 1, unit: "cup")
-                })
+                NavigationView {
+                    AddIngredientView { newIngredient in
+                        modelContext.insert(newIngredient)
+                        ingredients.append(newIngredient)
+                    }
+                }
             }
         }
     }
     
-    private var isFormValid: Bool {
+    var isFormValid: Bool {
         !title.isEmpty && !instructions.isEmpty && !ingredients.isEmpty && !cuisineType.isEmpty && !dietType.isEmpty
     }
+
+
+func saveRecipe() {
+    // Update the recipe with the edited values
+    recipe.title = title
+    recipe.servings = servings
+    recipe.readyInMinutes = readyInMinutes
+    recipe.instructions = instructions
+    recipe.cuisineType = cuisineType
+    recipe.dietType = dietType
+    recipe.isFavorite = isFavorite
     
-    private func saveRecipe() {
-        let imageData = selectedImage?.jpegData(compressionQuality: 0.8)
-        
-        let updatedRecipe = CustomRecipe(
-            id: recipe.id,
-            title: title,
-            image: imageData,
-            servings: servings,
-            readyInMinutes: readyInMinutes,
-            instructions: instructions,
-            ingredients: ingredients,
-            cuisineType: cuisineType,
-            dietType: dietType,
-            isFavorite: isFavorite
-        )
-        
-        viewModel.updateCustomRecipe(updatedRecipe)
-        presentationMode.wrappedValue.dismiss()
+    // Update image if changed
+    if let selectedImage = selectedImage {
+        recipe.imageData = selectedImage.jpegData(compressionQuality: 0.8)
     }
+    
+    // Update ingredients
+    recipe.ingredients = ingredients
+    
+    dismiss()
+}
 }
 
 #Preview {
-    NavigationStack {
-        EditRecipeView(
-            recipe: CustomRecipe(
-                id: UUID(),
-                title: "Homemade Pizza",
-                servings: 4,
-                readyInMinutes: 60,
-                instructions: "1. Preheat oven to 450°F.\n2. Roll out pizza dough.\n3. Add sauce and toppings.\n4. Bake for 12-15 minutes.",
-                ingredients: [
-                    CustomIngredient(name: "Pizza Dough", amount: 1, unit: "ball"),
-                    CustomIngredient(name: "Tomato Sauce", amount: 0.5, unit: "cup"),
-                    CustomIngredient(name: "Mozzarella Cheese", amount: 2, unit: "cup"),
-                    CustomIngredient(name: "Basil", amount: 0.25, unit: "cup")
-                ],
-                cuisineType: "Italian",
-                dietType: "Vegetarian",
-                isFavorite: true
-            ), viewModel: RecipesViewModel())
-
+    let mockRecipe = CustomRecipe(
+        title: "Homemade Pizza",
+        servings: 4,
+        readyInMinutes: 60,
+        instructions: "1. Preheat oven to 450°F.\n2. Roll out pizza dough.\n3. Add sauce and toppings.\n4. Bake for 12-15 minutes.",
+        cuisineType: "Italian",
+        dietType: "Vegetarian",
+        isFavorite: true
+    )
+    
+    // Add sample ingredients
+    let doughIngredient = CustomIngredient(name: "Pizza Dough", amount: 1, unit: "ball")
+    let sauceIngredient = CustomIngredient(name: "Tomato Sauce", amount: 0.5, unit: "cup")
+    let cheeseIngredient = CustomIngredient(name: "Mozzarella", amount: 2, unit: "cup")
+    
+    // Connect ingredients to recipe
+    mockRecipe.ingredients = [doughIngredient, sauceIngredient, cheeseIngredient]
+    
+    return NavigationStack {
+        EditRecipeView(recipe: mockRecipe)
+            .modelContainer(Recipe.preview)
     }
 }
+

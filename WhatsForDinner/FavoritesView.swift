@@ -6,10 +6,20 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct FavoritesView: View {
-    @Environment(\.presentationMode) var presentationMode
-    @State var viewModel: RecipesViewModel
+    @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) private var modelContext
+    
+    @Query(filter: #Predicate<Recipe> { $0.isFavorite == true },
+           sort: \Recipe.dateAdded,
+           order: .reverse) var favoriteRecipes: [Recipe]
+    
+    @Query(filter: #Predicate<CustomRecipe> { $0.isFavorite == true },
+           sort: \CustomRecipe.dateAdded,
+           order: .reverse) var favoriteCustomRecipes: [CustomRecipe]
+    
     @State private var showingCustomRecipes = false
     
     var body: some View {
@@ -25,7 +35,7 @@ struct FavoritesView: View {
                 
                 if !showingCustomRecipes {
                     // Favorites List
-                    if viewModel.favoriteRecipes.isEmpty {
+                    if favoriteRecipes.isEmpty {
                         Spacer()
                         VStack(spacing: 20) {
                             Image(systemName: "heart.slash")
@@ -45,8 +55,8 @@ struct FavoritesView: View {
                     } else {
                         ScrollView {
                             LazyVStack(spacing: 16) {
-                                ForEach(viewModel.favoriteRecipes, id: \.id) { recipe in
-                                    SearchResultRow(recipe: recipe, viewModel: viewModel)
+                                ForEach(favoriteRecipes) { recipe in
+                                    SearchResultRow(recipe: recipe)
                                 }
                             }
                             .padding()
@@ -54,7 +64,7 @@ struct FavoritesView: View {
                     }
                 } else {
                     // Custom Recipes List
-                    if viewModel.customRecipes.isEmpty {
+                    if favoriteCustomRecipes.isEmpty {
                         Spacer()
                         VStack(spacing: 20) {
                             Image(systemName: "doc.text")
@@ -74,8 +84,8 @@ struct FavoritesView: View {
                     } else {
                         ScrollView {
                             LazyVStack(spacing: 16) {
-                                ForEach(viewModel.customRecipes) { recipe in
-                                    CustomRecipeRow(recipe: recipe, viewModel: viewModel)
+                                ForEach(favoriteCustomRecipes) { recipe in
+                                    CustomRecipeRow(recipe: customRecipe)
                                 }
                             }
                             .padding()
@@ -85,15 +95,16 @@ struct FavoritesView: View {
             }
             .navigationTitle(showingCustomRecipes ? "My Recipes" : "Favorites")
             .navigationBarItems(leading: Button("Back") {
-                presentationMode.wrappedValue.dismiss()
+                dismiss()
             })
         }
     }
 }
 
 struct CustomRecipeRow: View {
-    let recipe: CustomRecipe
-    @State var viewModel: RecipesViewModel
+    @Environment(\.modelContext) private var modelContext
+    // Create a new recipe object
+    @State var customRecipe = ""
     @State private var showingDetail = false
     @State private var showingEditSheet = false
     @State private var showingDeleteAlert = false
@@ -104,35 +115,43 @@ struct CustomRecipeRow: View {
         }) {
             HStack(spacing: 16) {
                 // Recipe Image
-                if let imageData = recipe.image, let uiImage = UIImage(data: imageData) {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 70, height: 70)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                } else {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(width: 70, height: 70)
-                        .overlay(
-                            Image(systemName: "photo")
-                                .foregroundColor(.gray)
-                        )
+                if let imageURL = customRecipe.image {
+                    AsyncImage(url: URL(string: imageURL)) { phase in
+                        if let image = phase.image {
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(height: 250)
+                                .clipped()
+                        } else if phase.error != nil {
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(height: 250)
+                                .overlay(
+                                    Image(systemName: "photo")
+                                        .font(.largeTitle)
+                                        .foregroundColor(.gray)
+                                )
+                        } else {
+                            ProgressView()
+                                .frame(height: 250)
+                        }
+                    }
                 }
-                
+            
                 // Recipe Info
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(recipe.title)
+                    Text(customRecipe.title)
                         .font(.headline)
                         .foregroundColor(.primary)
                         .lineLimit(2)
                     
                     HStack(spacing: 12) {
-                        Label("\(recipe.readyInMinutes) min", systemImage: "clock")
+                        Label("\(customRecipe.readyInMinutes) min", systemImage: "clock")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
-                        Label("\(recipe.servings) servings", systemImage: "person")
+                        Label("\(customRecipe.servings) servings", systemImage: "person")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -155,11 +174,9 @@ struct CustomRecipeRow: View {
                     }
                     
                     Button(action: {
-                        var updatedRecipe = recipe
-                        updatedRecipe.isFavorite.toggle()
-                        viewModel.updateCustomRecipe(updatedRecipe)
+                        customRecipe.isFavorite.toggle()
                     }) {
-                        Label(recipe.isFavorite ? "Remove from Favorites" : "Add to Favorites", systemImage: recipe.isFavorite ? "heart.slash" : "heart")
+                        Label(customRecipe.isFavorite ? "Remove from Favorites" : "Add to Favorites", systemImage: customRecipe.isFavorite ? "heart.slash" : "heart")
                     }
                 } label: {
                     Image(systemName: "ellipsis")
@@ -177,17 +194,17 @@ struct CustomRecipeRow: View {
         }
         .buttonStyle(PlainButtonStyle())
         .sheet(isPresented: $showingDetail) {
-            CustomRecipeDetailView(recipe: recipe, viewModel: viewModel)
+            CustomRecipeDetailView(recipe: customRecipe)
         }
         .sheet(isPresented: $showingEditSheet) {
-            EditRecipeView(recipe: recipe, viewModel: viewModel)
+            EditRecipeView(recipe: customRecipe)
         }
         .alert(isPresented: $showingDeleteAlert) {
             Alert(
                 title: Text("Delete Recipe"),
-                message: Text("Are you sure you want to delete '\(recipe.title)'? This action cannot be undone."),
+                message: Text("Are you sure you want to delete '\($customRecipe.title)'? This action cannot be undone."),
                 primaryButton: .destructive(Text("Delete")) {
-                    viewModel.deleteCustomRecipe(recipe)
+                    modelContext.delete($customRecipe)
                 },
                 secondaryButton: .cancel()
             )
@@ -195,126 +212,7 @@ struct CustomRecipeRow: View {
     }
 }
 
-struct CustomRecipeDetailView: View {
-    let recipe: CustomRecipe
-    @State var viewModel: RecipesViewModel
-    @Environment(\.presentationMode) var presentationMode
-    @State private var showingEditSheet = false
-    
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Recipe Image
-                if let imageData = recipe.image, let uiImage = UIImage(data: imageData) {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(height: 250)
-                        .clipped()
-                } else {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(height: 250)
-                        .overlay(
-                            Image(systemName: "photo")
-                                .font(.largeTitle)
-                                .foregroundColor(.gray)
-                        )
-                }
-                
-                // Recipe Title and Info
-                VStack(alignment: .leading, spacing: 15) {
-                    HStack {
-                        Text(recipe.title)
-                            .font(.title)
-                            .fontWeight(.bold)
-                            .fixedSize(horizontal: false, vertical: true)
-                        
-                        Spacer()
-                        
-                        Button(action: {
-                            showingEditSheet = true
-                        }) {
-                            Image(systemName: "pencil")
-                                .font(.title2)
-                                .foregroundColor(.blue)
-                        }
-                    }
-                    
-                    // Recipe Information
-                    HStack(spacing: 20) {
-                        VStack {
-                            Image(systemName: "clock")
-                                .font(.system(size: 24))
-                            Text("\(recipe.readyInMinutes) min")
-                                .font(.caption)
-                        }
-                        
-                        VStack {
-                            Image(systemName: "person.2")
-                                .font(.system(size: 24))
-                            Text("\(recipe.servings) servings")
-                                .font(.caption)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    
-                    Divider()
-                    
-                    // Dietary Tags
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack {
-                            DietaryTag(text: recipe.cuisineType, color: .purple)
-                            DietaryTag(text: recipe.dietType, color: .green)
-                        }
-                    }
-                    
-                    Divider()
-                    
-                    // Ingredients Section
-                    Text("Ingredients")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    ForEach(recipe.ingredients) { ingredient in
-                        HStack {
-                            Image(systemName: "circle.fill")
-                                .font(.system(size: 8))
-                                .padding(.trailing, 5)
-                            
-                            Text("\(ingredient.amount, specifier: "%.1f") \(ingredient.unit) \(ingredient.name)")
-                        }
-                        .padding(.vertical, 2)
-                    }
-                    
-                    Divider()
-                    
-                    // Instructions Section
-                    Text("Instructions")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    Text(recipe.instructions)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .padding()
-            }
-        }
-        .edgesIgnoringSafeArea(.top)
-        .navigationBarItems(
-            leading: Button(action: {
-                presentationMode.wrappedValue.dismiss()
-            }) {
-                Image(systemName: "arrow.left")
-                    .font(.title2)
-            }
-        )
-        .sheet(isPresented: $showingEditSheet) {
-            EditRecipeView(recipe: recipe, viewModel: viewModel)
-        }
-    }
-}
-
 #Preview {
-    FavoritesView(viewModel: RecipesViewModel())
+    FavoritesView()
+        .modelContainer(Recipe.preview)
 }

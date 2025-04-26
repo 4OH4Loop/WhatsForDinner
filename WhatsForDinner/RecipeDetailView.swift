@@ -6,12 +6,13 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct RecipeDetailView: View {
-    @State var recipe: Recipe
-    @State var viewModel: RecipesViewModel
+    let recipe: Recipe
     @State private var recipeDetailVM = RecipeDetailViewModel()
-    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) private var modelContext
     
     var body: some View {
         ScrollView {
@@ -42,7 +43,7 @@ struct RecipeDetailView: View {
                     .overlay(
                         HStack {
                             Button(action: {
-                                presentationMode.wrappedValue.dismiss()
+                                dismiss()
                             }) {
                                 Image(systemName: "arrow.left")
                                     .font(.title)
@@ -52,13 +53,9 @@ struct RecipeDetailView: View {
                             }
                             Spacer()
                             Button(action: {
-                                if viewModel.isFavorite(recipe: recipe) {
-                                    viewModel.removeFromFavorites(recipe: recipe)
-                                } else {
-                                    viewModel.addToFavorites(recipe: recipe)
-                                }
+                                recipe.isFavorite.toggle()
                             }) {
-                                Image(systemName: viewModel.isFavorite(recipe: recipe) ? "heart.fill" : "heart")
+                                Image(systemName: recipe.isFavorite ? "heart.fill" : "heart")
                                     .font(.title)
                                     .foregroundColor(.white)
                                     .shadow(radius: 2)
@@ -238,7 +235,7 @@ struct RecipeDetailView: View {
         }
         .edgesIgnoringSafeArea(.top)
         .task {
-            await recipeDetailVM.fetchRecipeDetails(id: recipe.id)
+            await recipeDetailVM.fetchRecipeDetails(id: recipe.id!)
         }
     }
 }
@@ -258,6 +255,18 @@ struct DietaryTag: View {
     }
 }
 
+
 #Preview {
-    RecipeDetailView(recipe: Recipe(id: 716426, title: "Cauliflower, Brown Rice, and Vegetable Fried Rice"), viewModel: RecipesViewModel())
+    let container = Recipe.preview
+    NavigationStack {
+        // Create a simple mock recipe for preview purposes
+        RecipeDetailView(
+            recipe: Recipe(
+                id: 716429,
+                title: "Pasta with Garlic",
+                image: "https://spoonacular.com/recipeImages/716429-556x370.jpg"
+            )
+        )
+        .modelContainer(container)
+    }
 }

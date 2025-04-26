@@ -22,6 +22,7 @@
 		826C0D412DBC6F520071E19C /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826C0D402DBC6F520071E19C /* SearchView.swift */; };
 		826C0D432DBC724D0071E19C /* AddIngredientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826C0D422DBC724D0071E19C /* AddIngredientView.swift */; };
 		826C0D452DBC727D0071E19C /* EditRecipeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826C0D442DBC727D0071E19C /* EditRecipeView.swift */; };
+		826C0D672DBCCB390071E19C /* CustomRecipeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826C0D662DBCCB390071E19C /* CustomRecipeDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,6 +43,7 @@
 		826C0D422DBC724D0071E19C /* AddIngredientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddIngredientView.swift; sourceTree = "<group>"; };
 		826C0D442DBC727D0071E19C /* EditRecipeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditRecipeView.swift; sourceTree = "<group>"; };
 		826C0D462DBC741A0071E19C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		826C0D662DBCCB390071E19C /* CustomRecipeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomRecipeDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,6 +89,7 @@
 				826C0D3A2DBC6C990071E19C /* FilterView.swift */,
 				826C0D402DBC6F520071E19C /* SearchView.swift */,
 				826C0D3C2DBC6CAD0071E19C /* FavoritesView.swift */,
+				826C0D662DBCCB390071E19C /* CustomRecipeDetailView.swift */,
 				826C0D3E2DBC6CBA0071E19C /* AddRecipeView.swift */,
 				826C0D422DBC724D0071E19C /* AddIngredientView.swift */,
 				826C0D442DBC727D0071E19C /* EditRecipeView.swift */,
@@ -177,6 +180,7 @@
 				826C0D3B2DBC6C990071E19C /* FilterView.swift in Sources */,
 				826C0D432DBC724D0071E19C /* AddIngredientView.swift in Sources */,
 				826C0D332DBC6BFD0071E19C /* RecipeDetail.swift in Sources */,
+				826C0D672DBCCB390071E19C /* CustomRecipeDetailView.swift in Sources */,
 				826C0D1B2DBC256B0071E19C /* WhatsForDinnerApp.swift in Sources */,
 				826C0D312DBC6B810071E19C /* Recipe.swift in Sources */,
 				826C0D392DBC6C850071E19C /* RecipeDetailView.swift in Sources */,
@@ -318,10 +322,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WhatsForDinner/Info.plist;
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photos to add recipe images.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photos to add recipe images";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -348,10 +351,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WhatsForDinner/Info.plist;
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photos to add recipe images.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photos to add recipe images";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (

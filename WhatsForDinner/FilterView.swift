@@ -5,11 +5,27 @@
 //  Created by Carolyn Ballinger on 4/25/25.
 //
 
+//
+//  FilterView.swift
+//  WhatsForDinner
+//
+
 import SwiftUI
+import SwiftData
 
 struct FilterView: View {
-    @Environment(\.presentationMode) var presentationMode
-    @State var viewModel: RecipesViewModel
+    @Binding var selectedMainIngredient: String
+    @Binding var selectedCuisine: String
+    @Binding var selectedMaxPrepTime: Int?
+    @Binding var selectedDietaryRestrictions: [String]
+    
+    let availableMainIngredients: [String]
+    let availableCuisines: [String]
+    let availableDietaryRestrictions: [String]
+    
+    let onApply: () -> Void
+    
+    @Environment(\.dismiss) var dismiss
     
     // Temporary state to hold filters until applied
     @State private var tempMainIngredient: String
@@ -17,13 +33,28 @@ struct FilterView: View {
     @State private var tempMaxPrepTime: Int?
     @State private var tempDietaryRestrictions: [String]
     
-    init(viewModel: RecipesViewModel) {
-        self.viewModel = viewModel
+    init(selectedMainIngredient: Binding<String>,
+         selectedCuisine: Binding<String>,
+         selectedMaxPrepTime: Binding<Int?>,
+         selectedDietaryRestrictions: Binding<[String]>,
+         availableMainIngredients: [String],
+         availableCuisines: [String],
+         availableDietaryRestrictions: [String],
+         onApply: @escaping () -> Void) {
+        self._selectedMainIngredient = selectedMainIngredient
+        self._selectedCuisine = selectedCuisine
+        self._selectedMaxPrepTime = selectedMaxPrepTime
+        self._selectedDietaryRestrictions = selectedDietaryRestrictions
+        self.availableMainIngredients = availableMainIngredients
+        self.availableCuisines = availableCuisines
+        self.availableDietaryRestrictions = availableDietaryRestrictions
+        self.onApply = onApply
+        
         // Initialize temporary state with current values
-        _tempMainIngredient = State(initialValue: viewModel.selectedMainIngredient)
-        _tempCuisine = State(initialValue: viewModel.selectedCuisine)
-        _tempMaxPrepTime = State(initialValue: viewModel.selectedMaxPrepTime)
-        _tempDietaryRestrictions = State(initialValue: viewModel.selectedDietaryRestrictions)
+        _tempMainIngredient = State(initialValue: selectedMainIngredient.wrappedValue)
+        _tempCuisine = State(initialValue: selectedCuisine.wrappedValue)
+        _tempMaxPrepTime = State(initialValue: selectedMaxPrepTime.wrappedValue)
+        _tempDietaryRestrictions = State(initialValue: selectedDietaryRestrictions.wrappedValue)
     }
     
     let prepTimeOptions = [15, 30, 45, 60, 90, 120]
@@ -34,7 +65,7 @@ struct FilterView: View {
                 Section(header: Text("Main Ingredient")) {
                     Picker("Select main ingredient", selection: $tempMainIngredient) {
                         Text("Any").tag("")
-                        ForEach(viewModel.availableMainIngredients, id: \.self) { ingredient in
+                        ForEach(availableMainIngredients, id: \.self) { ingredient in
                             Text(ingredient.capitalized).tag(ingredient)
                         }
                     }
@@ -44,7 +75,7 @@ struct FilterView: View {
                 Section(header: Text("Cuisine")) {
                     Picker("Select cuisine", selection: $tempCuisine) {
                         Text("Any").tag("")
-                        ForEach(viewModel.availableCuisines, id: \.self) { cuisine in
+                        ForEach(availableCuisines, id: \.self) { cuisine in
                             Text(cuisine.capitalized).tag(cuisine)
                         }
                     }
@@ -62,7 +93,7 @@ struct FilterView: View {
                 }
                 
                 Section(header: Text("Dietary Restrictions")) {
-                    ForEach(viewModel.availableDietaryRestrictions, id: \.self) { restriction in
+                    ForEach(availableDietaryRestrictions, id: \.self) { restriction in
                         Button(action: {
                             if tempDietaryRestrictions.contains(restriction) {
                                 tempDietaryRestrictions.removeAll { $0 == restriction }
@@ -96,21 +127,19 @@ struct FilterView: View {
             .navigationTitle("Filters")
             .navigationBarItems(
                 leading: Button("Cancel") {
-                    presentationMode.wrappedValue.dismiss()
+                    dismiss()
                 },
                 trailing: Button("Apply") {
                     // Apply filters
-                    viewModel.selectedMainIngredient = tempMainIngredient
-                    viewModel.selectedCuisine = tempCuisine
-                    viewModel.selectedMaxPrepTime = tempMaxPrepTime
-                    viewModel.selectedDietaryRestrictions = tempDietaryRestrictions
+                    selectedMainIngredient = tempMainIngredient
+                    selectedCuisine = tempCuisine
+                    selectedMaxPrepTime = tempMaxPrepTime
+                    selectedDietaryRestrictions = tempDietaryRestrictions
                     
-                    // Fetch new results with filters
-                    Task {
-                        await viewModel.fetchRandomRecipe()
-                    }
+                    // Call the onApply closure
+                    onApply()
                     
-                    presentationMode.wrappedValue.dismiss()
+                    dismiss()
                 }
             )
         }
@@ -118,5 +147,26 @@ struct FilterView: View {
 }
 
 #Preview {
-    FilterView(viewModel: RecipesViewModel())
+    // Since we need to bind to values, we need to use a state object wrapper
+    struct PreviewWrapper: View {
+        @State private var ingredient = ""
+        @State private var cuisine = ""
+        @State private var maxTime: Int? = nil
+        @State private var restrictions: [String] = []
+        
+        var body: some View {
+            FilterView(
+                selectedMainIngredient: $ingredient,
+                selectedCuisine: $cuisine,
+                selectedMaxPrepTime: $maxTime,
+                selectedDietaryRestrictions: $restrictions,
+                availableMainIngredients: ["chicken", "beef", "pork", "fish", "vegetable"],
+                availableCuisines: ["italian", "mexican", "asian", "american", "mediterranean"],
+                availableDietaryRestrictions: ["vegetarian", "vegan", "gluten free", "dairy free"],
+                onApply: {}
+            )
+        }
+    }
+    
+    return PreviewWrapper()
 }

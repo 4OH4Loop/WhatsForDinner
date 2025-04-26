@@ -6,25 +6,34 @@
 //
 
 import SwiftUI
+import SwiftData
 import PhotosUI
 
 struct AddRecipeView: View {
-    @Environment(\.presentationMode) var presentationMode
-    @State var viewModel: RecipesViewModel
+    // Create a new recipe object
+    @State var recipe = ""
     
+    // Local state to bind to UI elements
     @State private var title = ""
     @State private var selectedImage: UIImage?
     @State private var servings = 4
     @State private var readyInMinutes = 30
     @State private var instructions = ""
-    @State private var ingredients: [CustomIngredient] = []
     @State private var cuisineType = ""
     @State private var dietType = ""
     
+    // Manage ingredients
+    @State private var ingredients: [CustomIngredient] = []
+    
+    // Sheet presentation
     @State private var showingImagePicker = false
     @State private var showingAddIngredient = false
-    @State private var currentIngredient = CustomIngredient(name: "", amount: 1, unit: "cup")
     
+    // Environment
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
+    
+    // Available options
     let cuisineTypes = ["Italian", "Mexican", "Asian", "American", "Mediterranean", "Indian", "French", "Greek", "Spanish", "Middle Eastern", "Thai", "Japanese", "Chinese", "Korean", "Vietnamese", "Other"]
     
     let dietTypes = ["None", "Vegetarian", "Vegan", "Gluten Free", "Dairy Free", "Keto", "Paleo", "Low Carb", "Low Fat", "Other"]
@@ -60,12 +69,14 @@ struct AddRecipeView: View {
                     Stepper("Prep Time: \(readyInMinutes) min", value: $readyInMinutes, in: 5...240, step: 5)
                     
                     Picker("Cuisine Type", selection: $cuisineType) {
+                        Text("Select a cuisine").tag("")
                         ForEach(cuisineTypes, id: \.self) { cuisine in
                             Text(cuisine).tag(cuisine)
                         }
                     }
                     
                     Picker("Dietary Type", selection: $dietType) {
+                        Text("Select dietary type").tag("")
                         ForEach(dietTypes, id: \.self) { diet in
                             Text(diet).tag(diet)
                         }
@@ -73,25 +84,30 @@ struct AddRecipeView: View {
                 }
                 
                 Section(header: Text("Ingredients")) {
-                    ForEach(ingredients) { ingredient in
-                        HStack {
-                            Text("\(ingredient.amount, specifier: "%.1f") \(ingredient.unit) \(ingredient.name)")
-                            Spacer()
+                    if ingredients.isEmpty {
+                        Text("Add ingredients to your recipe")
+                            .foregroundColor(.secondary)
+                            .italic()
+                    } else {
+                        ForEach(ingredients) { ingredient in
+                            HStack {
+                                Text("\(ingredient.amount, specifier: "%.1f") \(ingredient.unit) \(ingredient.name)")
+                                Spacer()
+                            }
                         }
-                    }
-                    .onDelete { indexSet in
-                        ingredients.remove(atOffsets: indexSet)
+                        .onDelete { indexSet in
+                            for index in indexSet {
+                                modelContext.delete(ingredients[index])
+                            }
+                            ingredients.remove(atOffsets: indexSet)
+                        }
                     }
                     
                     Button(action: {
                         showingAddIngredient = true
                     }) {
-                        HStack {
-                            Image(systemName: "plus.circle.fill")
-                                .foregroundColor(.blue)
-                            Text("Add Ingredient")
-                                .foregroundColor(.blue)
-                        }
+                        Label("Add Ingredient", systemImage: "plus.circle.fill")
+                            .foregroundColor(.blue)
                     }
                 }
                 
@@ -99,56 +115,67 @@ struct AddRecipeView: View {
                     TextEditor(text: $instructions)
                         .frame(minHeight: 150)
                 }
-                
-                Section {
-                    Button(action: saveRecipe) {
-                        Text("Save Recipe")
-                            .fontWeight(.semibold)
-                            .frame(maxWidth: .infinity)
-                            .foregroundColor(.white)
-                            .padding(.vertical, 10)
-                            .background(isFormValid ? Color.blue : Color.gray)
-                            .cornerRadius(10)
+            }
+            .navigationTitle("Add Recipe")
+            .navigationBarBackButtonHidden()
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Save") {
+                        // Update recipe with form data
+                        recipe.title = title
+                        recipe.servings = servings
+                        recipe.readyInMinutes = readyInMinutes
+                        recipe.instructions = instructions
+                        recipe.cuisineType = cuisineType
+                        recipe.dietType = dietType
+                        recipe.ingredients = ingredients
+                        modelContext.insert(recipe)
+                        guard let _ = try? modelContext.save() else {
+                            print("😡 ERROR: Save on AddRecipeView did not work.")
+                            return
+                        }
+                        
+                        dismiss()
                     }
                     .disabled(!isFormValid)
                 }
             }
-            .navigationTitle("Add Recipe")
-            .navigationBarItems(leading: Button("Cancel") {
-                presentationMode.wrappedValue.dismiss()
-            })
+            .onAppear {
+                // Initialize empty form
+                title = recipe.title
+                servings = recipe.servings
+                readyInMinutes = recipe.readyInMinutes
+                instructions = recipe.instructions
+                cuisineType = recipe.cuisineType
+                dietType = recipe.dietType
+                
+                if let imageData = recipe.imageData, let uiImage = UIImage(data: imageData) {
+                    selectedImage = uiImage
+                }
+                
+                ingredients = recipe.ingredients
+            }
             .sheet(isPresented: $showingImagePicker) {
                 PHPickerView(image: $selectedImage)
             }
             .sheet(isPresented: $showingAddIngredient) {
-                AddIngredientView(ingredient: $currentIngredient, onSave: {
-                    ingredients.append(currentIngredient)
-                    currentIngredient = CustomIngredient(name: "", amount: 1, unit: "cup")
-                })
+                NavigationView {
+                    AddIngredientView { newIngredient in
+                        modelContext.insert(newIngredient)
+                        ingredients.append(newIngredient)
+                    }
+                }
             }
         }
     }
     
     private var isFormValid: Bool {
         !title.isEmpty && !instructions.isEmpty && !ingredients.isEmpty && !cuisineType.isEmpty && !dietType.isEmpty
-    }
-    
-    private func saveRecipe() {
-        let imageData = selectedImage?.jpegData(compressionQuality: 0.8)
-        
-        let newRecipe = CustomRecipe(
-            title: title,
-            image: imageData,
-            servings: servings,
-            readyInMinutes: readyInMinutes,
-            instructions: instructions,
-            ingredients: ingredients,
-            cuisineType: cuisineType,
-            dietType: dietType
-        )
-        
-        viewModel.addCustomRecipe(newRecipe)
-        presentationMode.wrappedValue.dismiss()
     }
 }
 
@@ -193,7 +220,8 @@ struct PHPickerView: UIViewControllerRepresentable {
         }
     }
 }
-        
+
 #Preview {
-    AddRecipeView(viewModel: RecipesViewModel())
+    AddRecipeView()
+        .modelContainer(Recipe.preview)
 }
