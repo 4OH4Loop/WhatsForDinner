@@ -1,4 +1,5 @@
 (Note: The API is glitchy in Xcode preview and Simulator, often resulting in time out request errors. When installed on an iPhone, the app runs smoothly.)
+App demo available on YouTube at https://youtube.com/shorts/j_7ondq97oQ?feature=share
 
 The What's for Dinner app helps you quickly answer the nightly question your significant other or roommate is bound to ask when it's the furthest thing from your mind. No more going back and forth for so long you could've cooked and eaten dinner by the time you both agree on what to eat. 
 
