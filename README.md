@@ -1,3 +1,5 @@
+(Note: The API is glitchy in Xcode preview and Simulator, often resulting in time out request errors. When installed on an iPhone, the app runs smoothly.)
+
 The What's for Dinner app helps you quickly answer the nightly question your significant other or roommate is bound to ask when it's the furthest thing from your mind. No more going back and forth for so long you could've cooked and eaten dinner by the time you both agree on what to eat. 
 
 Other recipe apps are full of so many rabbit holes that an entire tv episode flies by in the background while you search for the perfect dish to cook for dinner. What's for Dinner cuts to the chase, immediately presenting you with the option to generate a randomized meal from thousands of recipes. 
