@@ -61,6 +61,9 @@ struct RecipeListView: View {
                                 .foregroundColor(.secondary)
                             
                             Button(action: {
+                                Task{
+                                    await testAPIConnection()
+                                }
                                 Task {
                                     await fetchRandomRecipe()
                                 }
@@ -220,6 +223,35 @@ struct RecipeListView: View {
     }
     
     // API methods
+    
+    func testAPIConnection() async {
+        let testURL = "https://api.spoonacular.com/food/trivia/random?apiKey=\(APIKeys.spoonacularKey)"
+        
+        guard let url = URL(string: testURL) else {
+            print("❌ Could not create test URL")
+            return
+        }
+        
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                print("📡 Test API Status Code: \(httpResponse.statusCode)")
+                
+                if httpResponse.statusCode == 200 {
+                    print("✅ API connection successful!")
+                    print("📦 Response: \(String(data: data, encoding: .utf8) ?? "No data")")
+                } else if httpResponse.statusCode == 401 {
+                    print("❌ API key unauthorized - check your key")
+                } else {
+                    print("❌ API returned status code: \(httpResponse.statusCode)")
+                }
+            }
+        } catch {
+            print("❌ Test API connection failed: \(error.localizedDescription)")
+        }
+    }
+    
     func fetchRandomRecipe() async {
         isLoading = true
         errorMessage = nil
